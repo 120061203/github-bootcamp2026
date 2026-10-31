@@ -8,7 +8,10 @@
 </head>
 <body>
   <main class="card">
-    <h1>待辦清單</h1>
+    <div class="header-row">
+      <h1>待辦清單</h1>
+      <button type="button" id="theme-toggle" class="theme-toggle"></button>
+    </div>
 
     <form id="todo-form" class="todo-form">
       <input
@@ -20,6 +23,12 @@
       >
       <button type="submit" class="add-btn">新增</button>
     </form>
+
+    <div class="filter-bar" id="filter-bar">
+      <button type="button" class="filter-btn" data-filter="all">全部</button>
+      <button type="button" class="filter-btn" data-filter="active">未完成</button>
+      <button type="button" class="filter-btn" data-filter="completed">已完成</button>
+    </div>
 
     <ul id="todo-list" class="todo-list"></ul>
 

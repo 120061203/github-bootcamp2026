@@ -1,11 +1,15 @@
 // 待辦清單的資料存放在 localStorage,key 為 "todos"
 const STORAGE_KEY = "todos";
+// 深色模式偏好存放在 localStorage,key 為 "theme"
+const THEME_KEY = "theme";
 
 const form = document.getElementById("todo-form");
 const input = document.getElementById("todo-input");
 const list = document.getElementById("todo-list");
 const emptyState = document.getElementById("empty-state");
 const remainingCount = document.getElementById("remaining-count");
+const themeToggle = document.getElementById("theme-toggle");
+const filterBar = document.getElementById("filter-bar");
 
 // 從 localStorage 讀出待辦清單,格式錯誤或不存在時回傳空陣列
 function loadTodos() {
@@ -23,13 +27,57 @@ function saveTodos(todos) {
 }
 
 let todos = loadTodos();
+let currentFilter = "all";
+
+// 套用深色模式:優先用使用者手動存的設定,沒有就跟隨系統設定
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  themeToggle.textContent =
+    theme === "dark" ? "☀️ 淺色模式" : "🌙 深色模式";
+}
+
+function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "dark" || saved === "light") {
+    applyTheme(saved);
+    return;
+  }
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  applyTheme(prefersDark ? "dark" : "light");
+}
+
+function toggleTheme() {
+  const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+}
+
+// 依目前篩選條件 (全部/未完成/已完成) 回傳要顯示的項目
+function getFilteredTodos() {
+  if (currentFilter === "active") return todos.filter((todo) => !todo.completed);
+  if (currentFilter === "completed") return todos.filter((todo) => todo.completed);
+  return todos;
+}
+
+function setFilter(filter) {
+  currentFilter = filter;
+  [...filterBar.children].forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.filter === filter);
+  });
+  render();
+}
 
 function render() {
   list.innerHTML = "";
 
-  emptyState.hidden = todos.length !== 0;
+  const visibleTodos = getFilteredTodos();
+  emptyState.hidden = visibleTodos.length !== 0;
+  emptyState.textContent =
+    todos.length === 0
+      ? "還沒有任何待辦事項,新增一個吧!"
+      : "這個篩選條件下沒有項目";
 
-  todos.forEach((todo) => {
+  visibleTodos.forEach((todo) => {
     const item = document.createElement("li");
     item.className = "todo-item" + (todo.completed ? " completed" : "");
 
@@ -91,4 +139,12 @@ form.addEventListener("submit", (event) => {
   input.focus();
 });
 
-render();
+themeToggle.addEventListener("click", toggleTheme);
+
+filterBar.addEventListener("click", (event) => {
+  const filter = event.target.dataset.filter;
+  if (filter) setFilter(filter);
+});
+
+initTheme();
+setFilter("all");

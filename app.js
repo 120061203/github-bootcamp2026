@@ -2,6 +2,8 @@
 const STORAGE_KEY = "todos";
 // 深色模式偏好存放在 localStorage,key 為 "theme"
 const THEME_KEY = "theme";
+// 篩選條件存放在 localStorage,key 為 "filter"
+const FILTER_KEY = "filter";
 
 const form = document.getElementById("todo-form");
 const input = document.getElementById("todo-input");
@@ -27,7 +29,22 @@ function saveTodos(todos) {
 }
 
 let todos = loadTodos();
-let currentFilter = "all";
+let currentFilter = loadFilter();
+
+function loadFilter() {
+  try {
+    const saved = localStorage.getItem(FILTER_KEY);
+    return saved === "all" || saved === "active" || saved === "completed"
+      ? saved
+      : "all";
+  } catch {
+    return "all";
+  }
+}
+
+function saveFilter(filter) {
+  localStorage.setItem(FILTER_KEY, filter);
+}
 
 // 套用深色模式:優先用使用者手動存的設定,沒有就跟隨系統設定
 function applyTheme(theme) {
@@ -60,11 +77,33 @@ function getFilteredTodos() {
 }
 
 function setFilter(filter) {
+  if (filter !== "all" && filter !== "active" && filter !== "completed") {
+    filter = "all";
+  }
+
   currentFilter = filter;
+  saveFilter(filter);
+
   [...filterBar.children].forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.filter === filter);
   });
   render();
+}
+
+function getEmptyMessage() {
+  if (todos.length === 0) {
+    return "還沒有任何待辦事項,新增一個吧!";
+  }
+
+  if (currentFilter === "active") {
+    return "太棒了! 沒有未完成的事項。";
+  }
+
+  if (currentFilter === "completed") {
+    return "目前沒有已完成的事項。資料還在，只是被當前篩選條件過濾掉了。";
+  }
+
+  return "目前沒有符合這個篩選條件的事項。";
 }
 
 function render() {
@@ -72,10 +111,7 @@ function render() {
 
   const visibleTodos = getFilteredTodos();
   emptyState.hidden = visibleTodos.length !== 0;
-  emptyState.textContent =
-    todos.length === 0
-      ? "還沒有任何待辦事項,新增一個吧!"
-      : "這個篩選條件下沒有項目";
+  emptyState.textContent = getEmptyMessage();
 
   visibleTodos.forEach((todo) => {
     const item = document.createElement("li");
@@ -147,4 +183,4 @@ filterBar.addEventListener("click", (event) => {
 });
 
 initTheme();
-setFilter("all");
+setFilter(currentFilter);

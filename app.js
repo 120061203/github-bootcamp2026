@@ -10,6 +10,7 @@ const input = document.getElementById("todo-input");
 const list = document.getElementById("todo-list");
 const emptyState = document.getElementById("empty-state");
 const remainingCount = document.getElementById("remaining-count");
+const clearCompletedBtn = document.getElementById("clear-completed");
 const themeToggle = document.getElementById("theme-toggle");
 const filterBar = document.getElementById("filter-bar");
 
@@ -106,6 +107,13 @@ function getEmptyMessage() {
   return "目前沒有符合這個篩選條件的事項。";
 }
 
+function updateClearCompletedButton() {
+  const completedCount = todos.filter((todo) => todo.completed).length;
+  clearCompletedBtn.hidden = completedCount === 0;
+  clearCompletedBtn.disabled = completedCount === 0;
+  clearCompletedBtn.setAttribute("aria-disabled", String(completedCount === 0));
+}
+
 function render() {
   list.innerHTML = "";
 
@@ -138,6 +146,7 @@ function render() {
 
   const remaining = todos.filter((todo) => !todo.completed).length;
   remainingCount.textContent = remaining;
+  updateClearCompletedButton();
 }
 
 function addTodo(text) {
@@ -168,6 +177,22 @@ function deleteTodo(id) {
   render();
 }
 
+function clearCompletedTodos() {
+  const completedCount = todos.filter((todo) => todo.completed).length;
+  if (completedCount === 0) {
+    return;
+  }
+
+  const confirmed = window.confirm("確定要清除所有已完成的待辦事項嗎？");
+  if (!confirmed) {
+    return;
+  }
+
+  todos = todos.filter((todo) => !todo.completed);
+  saveTodos(todos);
+  render();
+}
+
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   addTodo(input.value);
@@ -176,6 +201,7 @@ form.addEventListener("submit", (event) => {
 });
 
 themeToggle.addEventListener("click", toggleTheme);
+clearCompletedBtn.addEventListener("click", clearCompletedTodos);
 
 filterBar.addEventListener("click", (event) => {
   const filter = event.target.dataset.filter;

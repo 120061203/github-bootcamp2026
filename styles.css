@@ -213,6 +213,29 @@ h1 {
   color: var(--color-text-muted);
 }
 
+.todo-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.clear-completed-btn {
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-danger);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.clear-completed-btn:hover {
+  background: var(--color-bg);
+  border-color: var(--color-danger);
+}
+
 @media (max-width: 480px) {
   .card {
     padding: 20px;
